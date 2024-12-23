@@ -2,6 +2,9 @@
 
 A Node.js service to add watermark to images and embed messages using steganography.
 
+<img width="1087" alt="Screenshot 2024-12-23 at 08 09 21" src="https://github.com/user-attachments/assets/d413c2a7-690d-44b2-aaa9-d05984678069" />
+
+
 ## Installation
 
 To install the necessary dependencies, run the following command:
