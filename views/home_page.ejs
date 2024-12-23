@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .output img {
+            max-width: 100%;
+        }
+        .output {
+            text-align: center;
+        }
+        .output a {
+            margin-top: 10px;
+        }
+        .section {
+            display: none;
+            animation: fadeIn 1s forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">Image Processing</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#watermark" id="nav-watermark">Watermark</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#steganography" id="nav-steganography">Steganography</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#decode-steganography" id="nav-decode-steganography">Decode Steganography</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
+        <div id="watermark-section" class="section">
+            <h1 class="mt-4">Watermark Image</h1>
+            <form id="watermarkForm">
+                <div class="form-group">
+                    <label for="image">Upload Image:</label>
+                    <input type="file" class="form-control-file" id="image" name="image" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                    <label for="text">Watermark Text:</label>
+                    <input type="text" class="form-control col-lg-8" id="text" name="text" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            <div class="output mt-4" id="output-watermark">
+                <!-- The watermarked image will be displayed here -->
+            </div>
+        </div>
+
+        <div id="steganography-section" class="section">
+            <h1 class="mt-4">Steganography</h1>
+            <form id="steganographyForm">
+                <div class="form-group">
+                    <label for="steganographyImage">Upload Image:</label>
+                    <input type="file" class="form-control-file" id="steganographyImage" name="image" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Steganography Message:</label>
+                    <input type="text" class="form-control col-lg-8" id="message" name="message" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            <div class="output mt-4" id="output-steganography">
+                <!-- The steganography image will be displayed here -->
+            </div>
+        </div>
+
+        <div id="decode-steganography-section" class="section">
+            <h1 class="mt-4">Decode Steganography</h1>
+            <form id="decodeSteganographyForm">
+                <div class="form-group">
+                    <label for="decodeImage">Upload Image:</label>
+                    <input type="file" class="form-control-file" id="decodeImage" name="image" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            <div class="output mt-4" id="output-decode-steganography">
+                <!-- The decoded message will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('watermarkForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const imageFile = document.getElementById('image').files[0];
+            const text = document.getElementById('text').value;
+
+            formData.append('image', imageFile);
+            formData.append('text', text);
+
+            fetch('http://localhost:3000/watermark', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    const output = document.getElementById('output-watermark');
+                    output.innerHTML = `
+                        <p>${data.message}</p>
+                        <img src="${data.url}" alt="Watermarked Image">
+                        <a href="${data.url}" download class="btn btn-success mt-2">Download Image</a>
+                    `;
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            });
+        });
+
+        document.getElementById('steganographyForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const imageFile = document.getElementById('steganographyImage').files[0];
+            const message = document.getElementById('message').value;
+
+            formData.append('image', imageFile);
+            formData.append('message', message);
+
+            fetch('http://localhost:3000/steganography', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    const output = document.getElementById('output-steganography');
+                    output.innerHTML = `
+                        <p>${data.message}</p>
+                        <img src="${data.url}" alt="Steganography Image">
+                        <a href="${data.url}" download class="btn btn-success mt-2">Download Image</a>
+                    `;
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            });
+        });
+
+        document.getElementById('decodeSteganographyForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const imageFile = document.getElementById('decodeImage').files[0];
+
+            formData.append('image', imageFile);
+
+            fetch('http://localhost:3000/steganography/decode', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.decode) {
+                    const output = document.getElementById('output-decode-steganography');
+                    output.innerHTML = `<p>Decoded Message: ${data.decode}</p>`;
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            });
+        });
+
+        // Navigation functionality
+        document.getElementById('nav-watermark').addEventListener('click', function() {
+            showSection('watermark');
+        });
+        document.getElementById('nav-steganography').addEventListener('click', function() {
+            showSection('steganography');
+        });
+        document.getElementById('nav-decode-steganography').addEventListener('click', function() {
+            showSection('decode-steganography');
+        });
+
+        function showSection(section) {
+            document.getElementById('watermark-section').style.display = 'none';
+            document.getElementById('steganography-section').style.display = 'none';
+            document.getElementById('decode-steganography-section').style.display = 'none';
+
+            if (section === 'watermark') {
+                document.getElementById('watermark-section').style.display = 'block';
+            } else if (section === 'steganography') {
+                document.getElementById('steganography-section').style.display = 'block';
+            } else if (section === 'decode-steganography') {
+                document.getElementById('decode-steganography-section').style.display = 'block';
+            }
+        }
+
+        // Show the watermark section by default
+        showSection('watermark');
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
